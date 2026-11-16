@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Required files exist
+        run: |
+          for f in README.md LICENSE PULL_REQUEST_TEMPLATE.md AGENTS.md; do
+            test -s "$f" || { echo "missing or empty: $f"; exit 1; }
+          done
+          test -d ISSUE_TEMPLATE || { echo "missing ISSUE_TEMPLATE/"; exit 1; }
+          test -d profile || { echo "missing profile/"; exit 1; }
+      - name: Issue templates have front matter
+        run: |
+          for f in ISSUE_TEMPLATE/*.md; do
+            head -1 "$f" | grep -qx -- '---' || { echo "no front matter: $f"; exit 1; }
+          done
